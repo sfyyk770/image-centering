@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Centering Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button, label {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        button:hover, label:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        #canvas {
+            border: 2px solid #444;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .info {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label for="fileInput">Choose Image</label>
+        <input type="file" id="fileInput" accept="image/*">
+        <button id="downloadBtn" disabled>Download Image</button>
+    </div>
+
+    <canvas id="canvas" width="1920" height="1080"></canvas>
+    
+    <div class="info">
+        <p>Canvas size: 1920 x 1080 pixels | Background: Black</p>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Set canvas to 1920x1080
+        canvas.width = 1920;
+        canvas.height = 1080;
+
+        // Fill with black background initially
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Clear canvas with black background
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Calculate dimensions to fit height while maintaining aspect ratio
+                    const targetHeight = canvas.height;
+                    const aspectRatio = img.width / img.height;
+                    const targetWidth = targetHeight * aspectRatio;
+
+                    // Center the image horizontally
+                    const x = (canvas.width - targetWidth) / 2;
+                    const y = 0;
+
+                    // Draw the image
+                    ctx.drawImage(img, x, y, targetWidth, targetHeight);
+
+                    // Enable download button
+                    downloadBtn.disabled = false;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        downloadBtn.addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.download = 'centered-image-1920x1080.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    </script>
+</body>
+</html>
